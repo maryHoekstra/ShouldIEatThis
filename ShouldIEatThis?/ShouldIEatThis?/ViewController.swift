@@ -94,21 +94,45 @@ extension ViewController {
                 self.TextView.text = "Error code \(errorObj["code"]): \(errorObj["message"])"
             } else {
                 // Parse the response
-                print(json)
                 let responses: JSON = json["responses"][0]
-                
-                let labelAnnotations: JSON = responses["textAnnotations"][10]
                 self.ActivityIndicator.stopAnimating()
-                if labelAnnotations.count > 0 {
-                    let label = labelAnnotations["description"].stringValue
+                
+                let labelAnnotations: JSON = responses["textAnnotations"][0]
+                let numLabels: Int = labelAnnotations.count
+                
+                var addedSugars = ""
+                if numLabels > 0 {
+                    var ingredients = labelAnnotations["description"].stringValue.lowercased()
+                    print(ingredients)
+                    print("---------------------------------------")
+                    ingredients = ingredients.replacingOccurrences(of: "ingredients", with: "ingredient")
+                    ingredients = ingredients.replacingOccurrences(of: "ingredient ", with: ", ")
+                    ingredients = ingredients.replacingOccurrences(of: "\n", with: " ")
+                    ingredients = ingredients.replacingOccurrences(of: " (", with: ", ")
+                    ingredients = ingredients.replacingOccurrences(of: ")", with: "")
+                    ingredients = ingredients.replacingOccurrences(of: ". ", with: ", ")
+                    ingredients = ingredients.replacingOccurrences(of: " [", with: ", ")
+                    ingredients = ingredients.replacingOccurrences(of: "]", with: "")
+                    ingredients = ingredients.replacingOccurrences(of: ":", with: ", ")
+                    ingredients = ingredients.replacingOccurrences(of: ";", with: ", ")
                     
-                    // check if ingredient contains added sugar
-                    if ingDict["sugar"]!.contains(label.lowercased()) {
-                        self.TextView.text = label + " Added Sugar"
+                    var stringArray = ingredients.components(separatedBy: ", ")
+                    //stringArray = Array(Set(stringArray))
+                    for ingredient in stringArray {
+                        print(ingredient)
+                        // check if ingredient contains added sugar
+                        if ingDict["sugar"]!.contains(ingredient) {
+                            addedSugars.append(ingredient + " (added sugar)\n")
+                            //self.TextView.text = ingredient + " Added sugar"
+                        }
+                        else {
+                            //self.TextView.text = ingredient + " No added sugar"
+                        }
+
                     }
-                    else {
-                        self.TextView.text = label + " No added sugar"
-                    }
+                    self.TextView.text = addedSugars
+                    
+
                 }
                     
                 else {
