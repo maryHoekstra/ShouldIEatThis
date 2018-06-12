@@ -97,13 +97,13 @@ extension ViewController {
                 print(json)
                 let responses: JSON = json["responses"][0]
                 
-                let labelAnnotations: JSON = responses["textAnnotations"][3]
+                let labelAnnotations: JSON = responses["textAnnotations"][10]
                 self.ActivityIndicator.stopAnimating()
                 if labelAnnotations.count > 0 {
                     let label = labelAnnotations["description"].stringValue
                     
                     // check if ingredient contains added sugar
-                    if sugarIng.contains(label) {
+                    if ingDict["sugar"]!.contains(label.lowercased()) {
                         self.TextView.text = label + " Added Sugar"
                     }
                     else {
