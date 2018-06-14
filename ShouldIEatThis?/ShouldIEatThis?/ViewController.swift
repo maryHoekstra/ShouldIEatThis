@@ -6,6 +6,7 @@
 //  Copyright © 2018 Mary Hoekstra. All rights reserved.
 //
 
+import Foundation
 import UIKit
 import SwiftyJSON
 
@@ -103,21 +104,41 @@ extension ViewController {
                 var addedSugars = ""
                 if numLabels > 0 {
                     var ingredients = labelAnnotations["description"].stringValue.lowercased()
+                    print("ocr output: ")
                     print(ingredients)
                     print("---------------------------------------")
-                    ingredients = ingredients.replacingOccurrences(of: "ingredients", with: "ingredient")
-                    ingredients = ingredients.replacingOccurrences(of: "ingredient ", with: ", ")
+                    
+                    // extract string starting at "ingredients" and ending with a period
+                    print("testing")
+                    let range = ingredients.range(of: "ingredients")
+                    let startIndex = range?.lowerBound
+                    let newString = String(ingredients[startIndex!...])
+                    let periodIndex = newString.range(of: ".\n")
+                    let endIndex = periodIndex?.lowerBound
+                    let endIndexBeforePeriod = newString.index(endIndex!,offsetBy: -1)
+                    ingredients = String(newString[...endIndexBeforePeriod])
+                    print(ingredients)
+                    
+                    // clean up ingredients string
+                    ingredients = ingredients.replacingOccurrences(of: "ingredients", with: "")
                     ingredients = ingredients.replacingOccurrences(of: "\n", with: " ")
+                    // replace brackets with a comma so sub-ingredients are still parsed
                     ingredients = ingredients.replacingOccurrences(of: " (", with: ", ")
                     ingredients = ingredients.replacingOccurrences(of: ")", with: "")
-                    ingredients = ingredients.replacingOccurrences(of: ". ", with: ", ")
                     ingredients = ingredients.replacingOccurrences(of: " [", with: ", ")
                     ingredients = ingredients.replacingOccurrences(of: "]", with: "")
-                    ingredients = ingredients.replacingOccurrences(of: ":", with: ", ")
-                    ingredients = ingredients.replacingOccurrences(of: ";", with: ", ")
+                    // replace other list seperators with a comma
+                    ingredients = ingredients.replacingOccurrences(of: ": ", with: ", ")
+                    ingredients = ingredients.replacingOccurrences(of: "; ", with: ", ")
+                    ingredients = ingredients.replacingOccurrences(of: ". ", with: ", ")
+                    // strip words like "including" and "contains" for better results
+                    ingredients = ingredients.replacingOccurrences(of: "including ", with: "")
+                    ingredients = ingredients.replacingOccurrences(of: "contains ", with: "")
+                    ingredients = ingredients.replacingOccurrences(of: "*", with: "")
                     
+                    // split ingredients string on commas
                     var stringArray = ingredients.components(separatedBy: ", ")
-                    //stringArray = Array(Set(stringArray))
+                    stringArray = Array(Set(stringArray))
                     for ingredient in stringArray {
                         print(ingredient)
                         // check if ingredient contains added sugar
@@ -222,4 +243,5 @@ extension ViewController {
         task.resume()
     }
 }
+
 
