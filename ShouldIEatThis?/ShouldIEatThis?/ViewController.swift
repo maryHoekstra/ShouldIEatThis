@@ -104,8 +104,8 @@ extension ViewController {
                 var addedSugars = ""
                 if numLabels > 0 {
                     var ingredients = labelAnnotations["description"].stringValue.lowercased()
-                    print("ocr output: ")
-                    print(ingredients)
+                    //print("ocr output: ")
+                    //print(ingredients)
                     print("---------------------------------------")
                     
                     // extract string starting at "ingredients" and ending with a period
@@ -118,6 +118,7 @@ extension ViewController {
                     let endIndexBeforePeriod = newString.index(endIndex!,offsetBy: -1)
                     ingredients = String(newString[...endIndexBeforePeriod])
                     print(ingredients)
+                    print("\n---------------------------------------\n")
                     
                     // clean up ingredients string
                     ingredients = ingredients.replacingOccurrences(of: "ingredients", with: "")
@@ -137,23 +138,18 @@ extension ViewController {
                     ingredients = ingredients.replacingOccurrences(of: "*", with: "")
                     
                     // split ingredients string on commas
-                    var stringArray = ingredients.components(separatedBy: ", ")
-                    stringArray = Array(Set(stringArray))
-                    for ingredient in stringArray {
+                    var ingredientArray = ingredients.components(separatedBy: ", ")
+                    ingredientArray = Array(Set(ingredientArray))
+                    for str in ingredientArray {
+                        // trim any whitespace
+                        let ingredient = str.trimmingCharacters(in: .whitespacesAndNewlines)
                         print(ingredient)
                         // check if ingredient contains added sugar
                         if ingDict["sugar"]!.contains(ingredient) {
                             addedSugars.append(ingredient + " (added sugar)\n")
-                            //self.TextView.text = ingredient + " Added sugar"
                         }
-                        else {
-                            //self.TextView.text = ingredient + " No added sugar"
-                        }
-
                     }
                     self.TextView.text = addedSugars
-                    
-
                 }
                     
                 else {
