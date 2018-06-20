@@ -15,6 +15,9 @@ def list_top_ing(s):
     top_items_unique = list(OrderedDict.fromkeys(top_items))
 
     top_items_unique.remove('')
+    top_items_unique.remove('of')
+    top_items_unique.remove('l')
+
 
     return top_items_unique[0:1000]
 
@@ -43,6 +46,10 @@ def clean_ing(s):
     s = s.str.replace(r'[0-9]','')
     s = s.str.replace('>','')
     s = s.str.replace('to preserve freshness','')
+    s = s.str.replace('processed with alkali','')
+    s = s.str.replace('for color','')
+    s = s.str.replace('an emulsifier','')
+    s = s.str.replace('natural and artificial flavors','natural and artificial flavor')
     s = s.str.replace('%','')
     s = s.str.replace('&','')
     s = s.str.replace('#','')
@@ -93,7 +100,7 @@ def main():
 
     # list out the most popular ingredient
     top_ingredients = list_top_ing(eng_data.ingredients_text)
-
+    print(top_ingredients)
     # create a new column containing only ingredients that are part of the most popular
     eng_data['new_ing'] = np.nan
     eng_data['new_ing'] = eng_data['new_ing'].astype('object')
