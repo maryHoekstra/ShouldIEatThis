@@ -15,6 +15,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var ImageButton: UIButton!
     @IBOutlet weak var TextView: UITextView!
     @IBOutlet weak var ActivityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var AddedSugars: UITextField!
+    @IBOutlet weak var NoAddedSugar: UITextField!
+    @IBOutlet weak var SmileyIcon: UIImageView!
     
     let session = URLSession.shared
     
@@ -26,9 +29,17 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         ActivityIndicator.isHidden = true
+        AddedSugars.isHidden = true
+        NoAddedSugar.isHidden = true
+        TextView.isEditable = false
+        SmileyIcon.isHidden = true
     }
     
     @IBAction func takePhoto(_ sender: Any) {
+        AddedSugars.isHidden = true
+        NoAddedSugar.isHidden = true
+        TextView.text = ""
+        self.SmileyIcon.isHidden = true
         presentImagePicker()
     }
     
@@ -41,7 +52,7 @@ extension ViewController: UINavigationControllerDelegate {
 // MARK: - UIImagePickerControllerDelegate
 extension ViewController: UIImagePickerControllerDelegate {
     func presentImagePicker() {
-        let imagePickerActionSheet = UIAlertController(title: "Snap/Upload Image",
+        let imagePickerActionSheet = UIAlertController(title: "Snap Photo",
                                                        message: nil, preferredStyle: .actionSheet)
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
             let cameraButton = UIAlertAction(title: "Take Photo",
@@ -68,6 +79,7 @@ extension ViewController: UIImagePickerControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController,
                                didFinishPickingMediaWithInfo info: [String : Any]) {
         if let selectedPhoto = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            ActivityIndicator.isHidden = false
             ActivityIndicator.startAnimating()
             
             // Base64 encode the image and create the request
@@ -97,6 +109,7 @@ extension ViewController {
                 // Parse the response
                 let responses: JSON = json["responses"][0]
                 self.ActivityIndicator.stopAnimating()
+                self.ActivityIndicator.isHidden = true
                 
                 let labelAnnotations: JSON = responses["textAnnotations"][0]
                 let numLabels: Int = labelAnnotations.count
@@ -104,8 +117,8 @@ extension ViewController {
                 var addedSugars = ""
                 if numLabels > 0 {
                     var ingredients = labelAnnotations["description"].stringValue.lowercased()
-                    //print("ocr output: ")
-                    //print(ingredients)
+                    print("ocr output: ")
+                    print(ingredients)
                     print("---------------------------------------")
                     
                     // extract string starting at "ingredients" and ending with a period
@@ -146,14 +159,22 @@ extension ViewController {
                         print(ingredient)
                         // check if ingredient contains added sugar
                         if ingDict["sugar"]!.contains(ingredient) {
-                            addedSugars.append(ingredient + " (added sugar)\n")
+                            addedSugars.append("• " + ingredient + "\n")
                         }
                     }
-                    self.TextView.text = addedSugars
+                    if addedSugars.isEmpty {
+                        self.NoAddedSugar.isHidden = false
+                        self.SmileyIcon.isHidden = false
+                    }
+                    else {
+                        self.AddedSugars.isHidden = false
+                        self.TextView.text = addedSugars
+                    }
+                    
                 }
                     
                 else {
-                    self.TextView.text = "No ingredients found"
+                    //self.TextView.text = "No ingredients found"
                 }
                 
             }
