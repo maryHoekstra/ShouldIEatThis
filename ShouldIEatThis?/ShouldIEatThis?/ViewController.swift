@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import SwiftyJSON
+import CoreML
 
 class ViewController: UIViewController {
 
@@ -20,6 +21,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var SmileyIcon: UIImageView!
     
     let session = URLSession.shared
+    
+    // instantiate ML model
+    private let nutritionScore = NutritionScore()
     
     private let googleAPIKey = valueForAPIKey(keyname: "vision_api_key")
     var googleURL: URL {
@@ -89,6 +93,29 @@ extension ViewController: UIImagePickerControllerDelegate {
             dismiss(animated: true, completion: nil)
         }
     }
+    
+    // convert integers to doubles
+    func padArray(to numToPad: Int, sequence: [NSNumber]) -> [NSNumber] {
+        var newSeq = sequence
+        for _ in sequence.count ... numToPad {
+            newSeq.insert(NSNumber(value:0.0), at: 0)
+        }
+        return newSeq
+    }
+    
+    // write ingredients as sparse vectors
+    func tokenizer(words: [String]) -> [NSNumber] {
+        var tokens : [NSNumber] = []
+        for (index, word) in words.enumerated() {
+            if top_ing.contains(word) {
+                tokens.insert(NSNumber(value: 1.0), at: index)
+            } else {
+                tokens.insert(NSNumber(value: 0.0), at: index)
+            }
+        }
+        return padArray(to: 999, sequence: tokens)
+    }
+    
 }
 
 extension ViewController {
@@ -153,6 +180,8 @@ extension ViewController {
                     // split ingredients string on commas
                     var ingredientArray = ingredients.components(separatedBy: ", ")
                     ingredientArray = Array(Set(ingredientArray))
+                    
+                    // checking for sugars
                     for str in ingredientArray {
                         // trim any whitespace
                         let ingredient = str.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -171,11 +200,33 @@ extension ViewController {
                         self.TextView.text = addedSugars
                     }
                     
-                }
+                    // compute nutrition score
                     
-                else {
-                    //self.TextView.text = "No ingredients found"
+                    // make prediction
+                    let sparse_array : [NSNumber] = self.tokenizer(words: ingredientArray)
+                    
+                    guard let input_data = try? MLMultiArray(shape:[999], dataType:MLMultiArrayDataType.double) else {
+                        fatalError("Unexpected runtime error. MLMultiArray")
+                    }
+                    
+                    for (index,item) in sparse_array.enumerated() {
+                        input_data[index] = NSNumber(floatLiteral: Double(truncating: item))                    }
+                    
+                    let inputs = NutritionScoreInput(sparse_ing: input_data)
+                    guard let output = try? self.nutritionScore.prediction(input: inputs) else {
+                        return
+                    }
+                    
+                    let score = Int(truncating: output.score[0])
+                    print("score: ")
+                    print(score)
+                    
                 }
+                else {
+                    self.TextView.text = "Oops! Please try again."
+                    // hide "added sugars" title
+                }
+                
                 
             }
         })
