@@ -16,14 +16,19 @@ class ViewController: UIViewController {
     @IBOutlet weak var ImageButton: UIButton!
     @IBOutlet weak var TextView: UITextView!
     @IBOutlet weak var ActivityIndicator: UIActivityIndicatorView!
-    @IBOutlet weak var AddedSugars: UITextField!
-    @IBOutlet weak var NoAddedSugar: UITextField!
+    
+    @IBOutlet weak var AddedSugars: UILabel!
+    @IBOutlet weak var NoAddedSugar: UILabel!
+    
     @IBOutlet weak var SmileyIcon: UIImageView!
+    @IBOutlet weak var NutritionScoreLabel: UILabel!
+    @IBOutlet weak var ScoreImage: UIImageView!
+    
     
     let session = URLSession.shared
     
     // instantiate ML model
-    private let nutritionScore = NutritionScore()
+    let nutritionScore = NutritionScore()
     
     private let googleAPIKey = valueForAPIKey(keyname: "vision_api_key")
     var googleURL: URL {
@@ -37,6 +42,8 @@ class ViewController: UIViewController {
         NoAddedSugar.isHidden = true
         TextView.isEditable = false
         SmileyIcon.isHidden = true
+        NutritionScoreLabel.isHidden = true
+        ScoreImage.isHidden = true
     }
     
     @IBAction func takePhoto(_ sender: Any) {
@@ -44,6 +51,8 @@ class ViewController: UIViewController {
         NoAddedSugar.isHidden = true
         TextView.text = ""
         self.SmileyIcon.isHidden = true
+        NutritionScoreLabel.isHidden = true
+        ScoreImage.isHidden = true
         presentImagePicker()
     }
     
@@ -218,13 +227,32 @@ extension ViewController {
                     }
                     
                     let score = Int(truncating: output.score[0])
+                    self.NutritionScoreLabel.isHidden = false
+                    self.ScoreImage.isHidden = false
+                    //self.ScoreImage.text = String(score)
                     print("score: ")
                     print(score)
+                    
+                    // assign score to category and select score image
+                    if score <= -1 {
+                        self.ScoreImage.image = UIImage(named: "A.png")
+                    }
+                    else if (score >= 0 && score <= 2) {
+                        self.ScoreImage.image = UIImage(named: "B.png")
+                    }
+                    else if (score >= 3 && score <= 10) {
+                        self.ScoreImage.image = UIImage(named: "C.png")
+                    }
+                    else if (score >= 11 && score <= 18) {
+                        self.ScoreImage.image = UIImage(named: "D.png")
+                    }
+                    else {
+                        self.ScoreImage.image = UIImage(named: "E.png")
+                    }
                     
                 }
                 else {
                     self.TextView.text = "Oops! Please try again."
-                    // hide "added sugars" title
                 }
                 
                 
