@@ -169,7 +169,12 @@ extension ViewController {
                     let range = ingredients.range(of: "ingredients")
                     let startIndex = range?.lowerBound
                     let newString = String(ingredients[startIndex!...])
-                    let periodIndex = newString.range(of: ".\n")
+                    var periodIndex = newString.range(of: ".\n")
+                    
+                    // check if periodIndex is nil, remove line space
+                    if periodIndex == nil {
+                        periodIndex = newString.range(of: ".")
+                    } 
                     let endIndex = periodIndex?.lowerBound
                     let endIndexBeforePeriod = newString.index(endIndex!,offsetBy: -1)
                     ingredients = String(newString[...endIndexBeforePeriod])
