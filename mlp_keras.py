@@ -1,19 +1,25 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from keras import models
 from keras import layers
+from keras import optimizers
 from sklearn.preprocessing import MultiLabelBinarizer
 import pickle, pdb
 import coremltools
 
 def main():
+
+	# load the preprossed data
 	f = open('store.pckl', 'rb')
 	eng_data = pickle.load(f)
 	f.close()
 
+	# split the data in training, validation and test sets
 	np.random.seed(1234)
 	train, validate, test = np.split(eng_data.sample(frac=1, random_state=134),[int(.6*len(eng_data)), int(.8*len(eng_data))])
 
+	# convert the ingredients into sparse vector
 	mlb = MultiLabelBinarizer()
 	X_train = mlb.fit_transform(train['new_ing']).astype(np.float32)
 	y_train = train['nutrition-score-fr_100g'].values
@@ -23,9 +29,8 @@ def main():
 
 
 	all_ing = len(X_train[0])
-	print(all_ing)
 
-
+	# build the model
 	model = models.Sequential()
 	model.add(layers.Dense(256,activation='relu',input_shape=(all_ing,)))
 	model.add(layers.Dense(256,activation='relu'))
@@ -34,13 +39,36 @@ def main():
 
 	model.compile(optimizer='adam',loss='mean_squared_error', metrics=['accuracy'])
 
-	results = model.fit(X_train, y_train, epochs=1, batch_size=256, validation_data=(X_val,y_val))
+	results = model.fit(X_train, y_train, epochs=20, batch_size=200, validation_data=(X_val,y_val))
 
-	#print(np.mean(results.history["val_acc"]))
+	# summarize history for accuracy
+
+	fig = plt.figure()
+	plt.plot(results.history['acc'])
+	plt.plot(results.history['val_acc'])
+	plt.title('model accuracy')
+	plt.ylabel('accuracy')
+	plt.xlabel('epoch')
+	plt.legend(['train', 'validation'], loc='upper left')
+	plt.show()
+	fig.savefig('accuracy.png')
+	
+
+	# summarize history for loss
+	fig = plt.figure()
+	plt.plot(results.history['loss'])
+	plt.plot(results.history['val_loss'])
+	plt.title('model loss')
+	plt.ylabel('loss')
+	plt.xlabel('epoch')
+	plt.legend(['train', 'validation'], loc='upper left')
+	plt.show()
+	plt.savefig('loss.png')
+
 
 	test2 = test[0:1]
 	X_test = mlb.transform(test2['new_ing']).astype(np.float32)
-	pdb.set_trace()
+
 	y_test = test2['nutrition-score-fr_100g'].values
 
 	prediction = model.predict(X_test)
@@ -48,7 +76,7 @@ def main():
 	print(y_test)
 
 	coreml_model = coremltools.converters.keras.convert(model, input_names=['sparse_ing'], output_names=['score'])
-	coreml_model.save('NutritionScore.mlmodel')
+	coreml_model.save('ShouldIEatThis?/ShouldIEatThis?/NutritionScore.mlmodel')
 
 
 
