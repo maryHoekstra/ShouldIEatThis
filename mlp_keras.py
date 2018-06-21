@@ -27,6 +27,9 @@ def main():
 	X_val = mlb.transform(validate['new_ing']).astype(np.float32)
 	y_val = validate['nutrition-score-fr_100g'].values
 
+	X_test = mlb.transform(test['new_ing']).astype(np.float32)
+	y_test = test['nutrition-score-fr_100g'].values
+
 
 	all_ing = len(X_train[0])
 
@@ -51,8 +54,8 @@ def main():
 	plt.xlabel('epoch')
 	plt.legend(['train', 'validation'], loc='upper left')
 	plt.show()
-	fig.savefig('accuracy.png')
-	
+	#fig.savefig('accuracy.png')
+
 
 	# summarize history for loss
 	fig = plt.figure()
@@ -63,17 +66,16 @@ def main():
 	plt.xlabel('epoch')
 	plt.legend(['train', 'validation'], loc='upper left')
 	plt.show()
-	plt.savefig('loss.png')
+#	plt.savefig('loss.png')
 
-
-	test2 = test[0:1]
-	X_test = mlb.transform(test2['new_ing']).astype(np.float32)
-
-	y_test = test2['nutrition-score-fr_100g'].values
 
 	prediction = model.predict(X_test)
 	print(prediction)
 	print(y_test)
+
+	test_score, test_acc = model.evaluate(X_test, y_test, verbose=False)
+	print('Test score: ', test_score)    #Loss on test
+	print('Test accuracy: ', test_acc)
 
 	coreml_model = coremltools.converters.keras.convert(model, input_names=['sparse_ing'], output_names=['score'])
 	coreml_model.save('ShouldIEatThis?/ShouldIEatThis?/NutritionScore.mlmodel')

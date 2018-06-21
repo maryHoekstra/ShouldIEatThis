@@ -186,6 +186,8 @@ def clean_ing(s):
     s = s.str.replace('to retard spoilage','')
     s = s.str.replace('to return freshness','')
     s = s.str.replace('to stabilize color','')
+    s = s.str.replace('two percent','')
+    s = s.str.replace('percent','')
     s = s.str.replace('used to protect quality','')
     s = s.str.replace("what's in it",'')
     s = s.str.replace('with not more than less of','')
