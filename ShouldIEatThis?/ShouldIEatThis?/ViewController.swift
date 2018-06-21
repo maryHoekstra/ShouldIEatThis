@@ -24,6 +24,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var NutritionScoreLabel: UILabel!
     @IBOutlet weak var ScoreImage: UIImageView!
     
+    @IBOutlet weak var WelcomeLabel: UILabel!
+    @IBOutlet weak var InstructionsLabel: UIStackView!
+    
     
     let session = URLSession.shared
     
@@ -37,6 +40,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.font: UIFont(name: "DIN Alternate", size: 20)!]
         ActivityIndicator.isHidden = true
         AddedSugars.isHidden = true
         NoAddedSugar.isHidden = true
@@ -47,14 +51,17 @@ class ViewController: UIViewController {
     }
     
     @IBAction func takePhoto(_ sender: Any) {
+        InstructionsLabel.isHidden = true
         AddedSugars.isHidden = true
         NoAddedSugar.isHidden = true
+        WelcomeLabel.isHidden = true
         TextView.text = ""
         self.SmileyIcon.isHidden = true
         NutritionScoreLabel.isHidden = true
         ScoreImage.isHidden = true
         presentImagePicker()
     }
+    
     
 }
 
